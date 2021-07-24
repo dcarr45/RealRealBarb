@@ -8,8 +8,26 @@ intervalSlider.oninput = function() {
   intervalOut.innerText = this.value;
 }
 
+testModeSwitch = document.getElementById("testModeSwitch");
+testModeOptions = document.getElementById("testModeOptions");
+testNumItems = document.getElementById("testNumItems");
+testDelaySeconds = document.getElementById("testDelaySeconds");
+
+testModeSwitch.oninput = function() {
+  if (testModeSwitch.checked) {
+    testModeOptions.classList.remove("disabled");
+  } else {
+    testModeOptions.classList.add("disabled");
+  }
+}
+
 initItemsButton = document.getElementById("initItems");
 itemCount = document.getElementById("itemCount");
+searchUrl = document.getElementById("searchUrl");
+numAvailableEl = document.getElementById("numAvailable");
+numOnHoldEl = document.getElementById("numOnHold");
+numSoldEl = document.getElementById("numSold");
+
 
 initializeItems(false);
 
@@ -31,17 +49,28 @@ async function initializeItems(refresh) {
 
   chrome.scripting.executeScript({
     target: { tabId: tab.id },
-    function: getExistingItems, // from realrealreader.js
+    function: updateExistingItems, // from realrealreader.js
   },
   () => {
     chrome.storage.sync.get(['existingItems', 'searchUrl'], function(res) {
       itemCount.innerText = res.existingItems.length;
+      searchUrl.innerText = res.searchUrl;
 
-      let numAvailable, numOnHold, numSold = 0;
+      let numAvailable = 0, numOnHold = 0, numSold = 0;
 
       for (const item of res.existingItems) {
-        
+        if (item.state === 'A') {
+          numAvailable++;
+        } else if (item.state === 'H') {
+          numOnHold++;
+        } else if (item.state === 'S') {
+          numSold++;
+        }
       }
+
+      numAvailableEl.innerText = numAvailable;
+      numOnHoldEl.innerText = numOnHold;
+      numSoldEl.innerText = numSold;
     });
 
     initItemsButton.classList.remove('loading');
@@ -109,9 +138,9 @@ async function handleStart() {
   let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
   const cachedInfo = await new Promise(function(resolve, reject) {
-    chrome.storage.sync.get(['existingItems', 'sessionMeta'], resolve);
+    chrome.storage.sync.get(['existingIds', 'sessionMeta'], resolve);
   });
-  const cachedIds = cachedInfo.existingItems;
+  const cachedIds = cachedInfo.existingIds;
   const sessionMeta = cachedInfo.sessionMeta;
 
   console.log("Starting refresh loop at " + intervalSlider.value + " ms interval");
@@ -121,7 +150,11 @@ async function handleStart() {
 
   var refreshCount = 0;
 
-  var startTime = null;
+  var loopStartTime = Date.now();
+  var testConditionHit = false; // Only relevant if test mode enabled
+
+  var iterStartTime = null;
+
   while (true) {
     let intervalMs = +intervalSlider.value;
 
@@ -130,8 +163,8 @@ async function handleStart() {
       await curIter.then((v) => console.log(refreshCount + " completed"));
     }
 
-    if (startTime != null) {
-      const pauseFor = ((startTime + intervalMs) - Date.now());
+    if (iterStartTime != null) {
+      const pauseFor = ((iterStartTime + intervalMs) - Date.now());
       if (pauseFor > 0) {
         console.log("Pausing for " + pauseFor + " ms");
         await new Promise(r => setTimeout(r, pauseFor));
@@ -145,16 +178,26 @@ async function handleStart() {
     if (!running) {
       break;
     } else {
-      const existingIds = cachedIds;
-      // var existingIds;
-      // if (refreshCount === 5) {
-      //   console.log("TEST: remove " + cachedIds.slice(0,5) + " from existing ids");
-      //   existingIds = cachedIds.slice(5);
-      // } else {
-      //   existingIds = cachedIds;
-      // }
+      var existingIds;
 
-      startTime = Date.now();
+      if (testModeSwitch.checked && !testConditionHit) {
+        let delayMs = (+testDelaySeconds.value * 1000);
+        let numItems = +testNumItems.value;
+
+        let curTime = Date.now();
+        if (((loopStartTime + delayMs) - curTime) <= 0) {
+          testConditionHit = true;
+
+          console.log("TEST: remove " + cachedIds.slice(0, numItems) + " from existing ids");
+          existingIds = cachedIds.slice(numItems);
+        } else {
+          existingIds = cachedIds;
+        }
+      } else {
+        existingIds = cachedIds;
+      }
+
+      iterStartTime = Date.now();
       try {
         curIter = doRefresh(++refreshCount, tab, existingIds, sessionMeta)
             .then(
@@ -202,7 +245,8 @@ function updateNewItemSummary(items) {
   for (const item of items) {
     console.log("Adding item summary for " + item.id);
     itemHtml = '<li><div>' +
-    '<a href="' + item.link + '">' + item.id + '</a>' +
+    '<a href="' + item.link + '">' + item.name + '</a>' +
+    '<p><b>Price: </b><span class="itemPrice">$' + item.price + '</span></p>' +
     '<p><b>Available: </b>';
     if (item.available) {
       itemHtml += '<span class="yesAvailable">Yes</span>';
@@ -217,4 +261,11 @@ function updateNewItemSummary(items) {
   }
   console.log("Enabling new item summary");
   newItemSummary.classList.remove("disabled");
+}
+
+closeItemSummaryButton = document.getElementById("closeItemSummary");
+closeItemSummaryButton.onclick = () => {
+  newItemCount.innerText = "0";
+  newItemList.innerHTML = "";
+  newItemSummary.classList.add("disabled");
 }

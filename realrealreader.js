@@ -1,28 +1,41 @@
-function getExistingItems() {
-  itemIds = [];
-
+function updateExistingItems() {
   sessionMeta = null;
 
   elems = document.querySelectorAll(".product-card");
 
+  itemIds = [];
+  itemDetails = [];
+
   elems.forEach((el, i) => {
     id = el.getAttribute('data-product-id');
     if (id) {
-      if (sessionMeta === null) {
-        obsessElem = el.nextElementSibling; // Only sibling of $(this) should be little heart "obsess" button
+      link = "https://www.therealreal.com" + el.getAttribute('href');
 
+      // Only sibling of $(this) should be little heart "obsess" button
+      obsessElem = el.nextElementSibling;
+      if (sessionMeta === null) {
         sessionMeta = {
           sessionId: obsessElem.getAttribute('data-analytics-session-id'),
           csrf: obsessElem.getAttribute('data-csrf')
         };
       }
 
+      details = JSON.parse(obsessElem.getAttribute('data-analytics-attributes'));
+
       itemIds.push(id);
+      itemDetails.push({
+        id: id,
+        available: (details.product_state === 'A'),
+        state: details.product_state,
+        price: (details.price / 100),
+        name: details.name
+      })
     }
   });
 
   pageData = {
-    existingItems: itemIds,
+    existingItems: itemDetails,
+    existingIds: itemIds,
     sessionMeta: sessionMeta,
     searchUrl: window.location.href
   };
@@ -30,8 +43,6 @@ function getExistingItems() {
   chrome.storage.sync.set(pageData, () => {
     console.log("Overwrote sync storage with ", pageData);
   });
-
-  return itemIds;
 }
 
 function getNewItems(existingIds, sessionMeta) {
@@ -45,12 +56,10 @@ function getNewItems(existingIds, sessionMeta) {
     id = el.getAttribute('data-product-id');
     if (id && !existingIds.includes(id)) {
       link = "https://www.therealreal.com" + el.getAttribute('href');
-      isAvailable = el.querySelector('.product-card__status-label').innerText === "";
 
       item = {
         id: id,
         link: link,
-        available: isAvailable
       };
 
       // Immediately kick off add-item request via background.js,
@@ -61,7 +70,16 @@ function getNewItems(existingIds, sessionMeta) {
         sessionMeta: sessionMeta
       });
 
-      newItems.push(item);
+      obsessElem = el.nextElementSibling;
+      details = JSON.parse(obsessElem.getAttribute('data-analytics-attributes'));
+
+      newItems.push({
+        ...item,
+        available: (details.product_state === 'A'),
+        state: details.product_state,
+        price: (details.price / 100),
+        name: details.name
+      });
     }
   });
 

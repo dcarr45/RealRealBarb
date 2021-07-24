@@ -47,8 +47,71 @@
   background-color: #9c2525;
 }
 
-.pageDataContainer {
+.testModeContainer {
   margin-top: 5px;
+  color: #2196F3;
+}
+.testModeContainer p.disabled {
+  display: none
+}
+.testToggle {
+  position: relative;
+  display: inline-block;
+  width: 30px;
+  height: 17px;
+}
+.testToggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.toggleSlider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: .2s;
+  transition: .2s;
+  border-radius: 20px;
+}
+.toggleSlider:before {
+  position: absolute;
+  content: "";
+  height: 11px;
+  width: 11px;
+  left: 4px;
+  bottom: 3px;
+  background-color: white;
+  -webkit-transition: .2s;
+  transition: .2s;
+  border-radius: 50%;
+}
+input:checked + .toggleSlider {
+  background-color: #2196F3;
+}
+input:focus + .toggleSlider {
+  box-shadow: 0 0 1px #2196F3;
+}
+input:checked + .toggleSlider:before {
+  -webkit-transform: translateX(10px);
+  -ms-transform: translateX(10px);
+  transform: translateX(10px);
+}
+
+.pageDataHeader {
+  display: flex;
+  align-items: center;
+  margin-top: 5px;
+}
+.pageDataHeader > span {
+  opacity: 0.5;
+}
+
+.pageDataContainer {
+  padding: 5px;
   display: flex;
   flex-direction: column;
 }
@@ -56,6 +119,17 @@
 .currentItems {
   margin-top: 10px;
   display: flex;
+  flex-direction: column;
+}
+
+.currentItems ul {
+  padding-left: 10px;
+  margin-top: 5px;
+}
+
+.currentItems li {
+  display: block;
+  padding: 2px;
 }
 
 #initItems {
@@ -67,8 +141,9 @@
   border: none;
   cursor: pointer;
 
-  margin-left: 5px;
-  margin-bottom: 6px;
+  margin-left: auto; /* Right align */
+  margin-bottom: -5px;
+  margin-right: 5px;
 
   opacity: 0.7;
   -webkit-transition: .2s; /* 0.2 seconds transition on hover */
@@ -86,8 +161,22 @@
 .item-summary {
   display: auto;
 }
+.item-summary > p {
+  display: flex;
+}
 .item-summary.disabled {
   display: none;
+}
+#newItemCount {
+  padding: 0px 3px;
+}
+#closeItemSummary {
+  opacity: 0.7;
+  cursor: pointer;
+  margin-left: auto;
+}
+#closeItemSummary:hover {
+  opacity: 1;
 }
 
 @-webkit-keyframes spin-right {

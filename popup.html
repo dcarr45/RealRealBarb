@@ -11,14 +11,38 @@
         <input type="range" min="10" max="1000" value="500" class="slider" id="intervalSlider">
       </div>
     </div>
+    <div class="testModeContainer">
+      <div>
+        <span>Test mode</span>
+        <label class="testToggle">
+          <input type="checkbox" id="testModeSwitch">
+          <span class="toggleSlider"></span>
+        </label>
+      </div>
+      <p class="disabled" id="testModeOptions">
+        Add first
+        <input type="number" id="testNumItems" min="1" max="5" value="1">
+        item(s) after
+        <input type="number" id="testDelaySeconds" min="1" max="10" value="2">
+        second(s)
+      </p>
+    </div>
+    <div class="pageDataHeader">
+      <span>Current Page Data</span>
+      <button id="initItems"></button>
+    </div>
     <div class="pageDataContainer">
-      <span style="margin-top: 5px"><b>Current URL: </b><span id="searchUrl"></span></span>
+      <span style="margin-top: 5px"><b>Search URL: </b><span id="searchUrl"></span></span>
       <div class="currentItems">
-        <span><b>Existing items: </b><span id="itemCount"></span></span>
-        <button id="initItems"></button>
+        <span><b>Existing items: </b><span id="itemCount">20</span></span>
+        <ul>
+          <li>Available: <span id="numAvailable"></span></li>
+          <li>On Hold: <span id="numOnHold"></span></li>
+          <li>Sold: <span id="numSold"></span></li>
+        </ul>
       </div>
       <div id="newItemSummary" class="item-summary disabled">
-        <p>Sent requests for <span id="newItemCount"></span> new item(s)</p>
+        <p>Sent requests for <span id="newItemCount"></span> new item(s)<span id="closeItemSummary">X</span></p>
         <ol id="newItemList">
         </ol>
       </div>
