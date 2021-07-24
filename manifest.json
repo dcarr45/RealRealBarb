@@ -1,11 +1,19 @@
 {
   "name": "RealRealBarb",
-  "description": "really",
+  "description": "A Real Barb, for TheRealReal",
   "version": "0.1",
   "manifest_version": 3,
-  "permissions": ["storage", "activeTab", "scripting"],
+  "permissions": ["storage", "activeTab", "scripting", "webNavigation"],
   "background": {
     "service_worker": "background.js"
   },
-  "action": {}
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "128": "/images/barb128circle.png"
+    }
+  },
+  "icons": {
+    "128": "/images/barb128circle.png"
+  }
 }

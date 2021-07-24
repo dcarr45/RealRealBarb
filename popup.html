@@ -1,19 +1,29 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <link rel="stylesheet" href="third-party/jquery-ui.min.css">
-    <link rel="stylesheet" href="third-party/jquery-ui.structure.min.css">
-    <link rel="stylesheet" href="third-party/jquery-ui.theme.min.css">
-    <script src="third-party/jquery-3.6.0.min.js"></script>
-    <script src="third-party/jquery-ui.min.js"></script>
-
     <link rel="stylesheet" href="popup.css">
-    <script src="popup.js"></script>
   </head>
   <body>
-    <div id="slider">
-      <div id="custom-handle" class="ui-slider-handle"></div>
+    <div class="optionContainer">
+      <button class="start" id="startstop">Start</button>
+      <div class="slideContainer">
+        <p>Refresh interval: <span id="interval"></span>ms</p>
+        <input type="range" min="10" max="1000" value="500" class="slider" id="intervalSlider">
+      </div>
     </div>
-    <script src="realrealbarb.js"></script>
+    <div class="pageDataContainer">
+      <span style="margin-top: 5px"><b>Current URL: </b><span id="searchUrl"></span></span>
+      <div class="currentItems">
+        <span><b>Existing items: </b><span id="itemCount"></span></span>
+        <button id="initItems"></button>
+      </div>
+      <div id="newItemSummary" class="item-summary disabled">
+        <p>Sent requests for <span id="newItemCount"></span> new item(s)</p>
+        <ol id="newItemList">
+        </ol>
+      </div>
+    </div>
+    <script src="realrealreader.js"></script>
+    <script src="popup.js"></script>
   </body>
 </html>
